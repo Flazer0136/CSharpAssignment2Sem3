@@ -5,19 +5,30 @@ namespace TripLogger.Controllers
 {
     public class HomeController : Controller
     {
-        private Repository<Trip> data { get; set; }
-        public HomeController(TripLoggerContext ctx) => data = new Repository<Trip>(ctx);
+        private readonly TripLoggerContext _context;
 
-        public ViewResult Index()
+        public HomeController(TripLoggerContext context)
         {
-            var options = new QueryOptions<Trip> { 
-                Includes = "Destination, Accommodation, TripActivities.Activity",
-                OrderBy = t => t.StartDate
-            };
-
-            var trips = data.List(options);
-            return View(trips);
+            _context = context;
         }
 
+        public IActionResult Index()
+        {
+            var trips = _context.Trips
+                .Select(t => new TripViewModel
+                {
+                    Id = t.Id,
+                    Destination = t.Destination.Name,
+                    Accommodation = t.Accommodation.Name,
+                    StartDate = t.StartDate,
+                    EndDate = t.EndDate,
+                    AccommodationPhoneNumber = t.AccommodationPhoneNumber,
+                    AccommodationEmail = t.AccommodationEmail,
+                    ThingsToDo = string.Join("\n ", t.TripActivities.Select(a => a.Activity.Name))
+                })
+                .ToList();
+
+            return View(trips);
+        }
     }
 }

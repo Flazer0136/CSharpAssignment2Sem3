@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripLogger.Models;
 
@@ -11,9 +12,11 @@ using TripLogger.Models;
 namespace TripLogger.Migrations
 {
     [DbContext(typeof(TripLoggerContext))]
-    partial class TripLoggerContextModelSnapshot : ModelSnapshot
+    [Migration("20250313083321_MakeEmailOptional")]
+    partial class MakeEmailOptional
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -87,20 +90,22 @@ namespace TripLogger.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AccommodationEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("AccommodationId")
+                    b.Property<int>("AccommodationId")
                         .HasColumnType("int");
-
-                    b.Property<string>("AccommodationPhoneNumber")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DestinationId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
@@ -134,7 +139,8 @@ namespace TripLogger.Migrations
                     b.HasOne("TripLogger.Models.Accommodation", "Accommodation")
                         .WithMany("Trips")
                         .HasForeignKey("AccommodationId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.HasOne("TripLogger.Models.Destination", "Destination")
                         .WithMany("Trips")

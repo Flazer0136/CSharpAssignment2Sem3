@@ -27,7 +27,7 @@ namespace TripLogger
             services.AddControllersWithViews();
 
             services.AddDbContext<TripLoggerContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("TripLogContext")));
+                options.UseSqlServer(Configuration.GetConnectionString("TripLoggerContext")));
         }
 
         // Use this method to configure the HTTP request pipeline.

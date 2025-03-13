@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripLogger.Models;
 
@@ -11,9 +12,11 @@ using TripLogger.Models;
 namespace TripLogger.Migrations
 {
     [DbContext(typeof(TripLoggerContext))]
-    partial class TripLoggerContextModelSnapshot : ModelSnapshot
+    [Migration("20250313090033_AddAccommodationContactInfo")]
+    partial class AddAccommodationContactInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

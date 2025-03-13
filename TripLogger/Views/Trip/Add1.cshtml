@@ -1,4 +1,4 @@
-﻿@model TripViewModel
+﻿@model TripPage1ViewModel
 
 @{
     ViewBag.Title = "Add Trip - Page 1";
@@ -7,39 +7,28 @@
 
 <div asp-validation-summary="All" class="text-danger"></div>
 
-<form asp-action="Add">
-    <input type="hidden" asp-for="PageNumber" />
-
+<form method="post">
     <div class="form-group">
-        <label asp-for="Trip.DestinationId">Destination</label>
-        <a asp-action="Index" asp-controller="Manage" class="ml-4">Manage destinations</a>
-        <select asp-for="Trip.DestinationId" class="form-control"
-                asp-items="@(new SelectList(Model.Destinations, "DestinationId", "Name"))">
-            <option value="0"></option>
-        </select>
+        <label asp-for="Destination">Destination</label>
+        <input type="text" asp-for="Destination" class="form-control" required />
     </div>
 
     <div class="form-group">
-        <label asp-for="Trip.AccommodationId">Accommodations</label>
-        <a asp-action="Index" asp-controller="Manage" class="ml-4">Manage accommodations</a>
-        <select asp-for="Trip.AccommodationId" class="form-control"
-                asp-items="@(new SelectList(Model.Accommodations, "AccommodationId", "Name"))">
-            <option value="0"></option>
-        </select>
+        <label asp-for="Accommodation">Accommodations (Optional)</label>
+        <input type="text" asp-for="Accommodation" class="form-control" />
     </div>
 
     <div class="form-group">
-        <label asp-for="Trip.StartDate">Start Date</label>
-        <input type="text" asp-for="Trip.StartDate" class="form-control" />
+        <label asp-for="StartDate">Start Date</label>
+        <input type="date" asp-for="StartDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
     </div>
 
     <div class="form-group">
-        <label asp-for="Trip.EndDate">End Date</label>
-        <input type="text" asp-for="Trip.EndDate" class="form-control" />
+        <label asp-for="EndDate">End Date</label>
+        <input type="date" asp-for="EndDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
     </div>
     <div>
         <button type="submit" class="btn btn-dark">Next</button>
         <a asp-action="Cancel" class="btn btn-outline-dark">Cancel</a>
     </div>
 </form>
-

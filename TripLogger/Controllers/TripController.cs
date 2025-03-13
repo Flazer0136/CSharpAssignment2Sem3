@@ -1,136 +1,97 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using TripLogger.Models;
 
-namespace TripLogger.Controllers
+public class TripController : Controller
 {
-    public class TripController : Controller
+    private readonly TripLoggerContext _context;
+
+    public TripController(TripLoggerContext context)
     {
-        private UnitOfWork data { get; set; }
-        public TripController(TripLoggerContext ctx) => data = new UnitOfWork(ctx);
+        _context = context;
+    }
 
-        public RedirectToActionResult Index() => RedirectToAction("Index", "Home");
+    public IActionResult Add1()
+    {
+        return View(new TripPage1ViewModel());
+    }
 
-        [HttpGet]
-        public ViewResult Add(string id = "")
+    [HttpPost]
+    public IActionResult Add1(TripPage1ViewModel model)
+    {
+        if (ModelState.IsValid)
         {
-            var vm = new TripViewModel();
-
-            if (id.ToLower() == "page2")
+            TempData["TripPage1"] = JsonConvert.SerializeObject(model);
+            if (!string.IsNullOrEmpty(model.Accommodation))
             {
-                vm.PageNumber = 2;
-
-                // get destination name for display by view
-                int destId = (int)TempData.Peek(nameof(Trip.DestinationId));
-                vm.DestinationName = data.Destinations.Get(destId).Name;
-
-                // get data for drop-down
-                vm.Activities = data.Activities.List(new QueryOptions<Activity> { 
-                    OrderBy = a => a.Name
-                });
-
-                return View("Add2", vm);
+                return RedirectToAction("Add2");
             }
-            else 
-            {
-                vm.PageNumber = 1;
-
-                // get data for drop-downs
-                vm.Destinations = data.Destinations.List(new QueryOptions<Destination> { 
-                    OrderBy = d => d.Name
-                });
-                vm.Accommodations = data.Accommodations.List(new QueryOptions<Accommodation> { 
-                    OrderBy = a => a.Name
-                });
-
-                return View("Add1", vm);
-            }      
+            return RedirectToAction("Add3");
         }
+        return View(model);
+    }
 
-        [HttpPost]
-        public IActionResult Add(TripViewModel vm)
+    public IActionResult Add2()
+    {
+        var model = new TripPage2ViewModel();
+        return View(model);
+    }
+
+    [HttpPost]
+    public IActionResult Add2(TripPage2ViewModel model)
+    {
+        if (ModelState.IsValid)
         {
-            if (vm.PageNumber == 1)
-            {
-                if (ModelState.IsValid) // only page 1 has required data
-                {
-                    // Store data in TempData 
-                    TempData[nameof(Trip.DestinationId)] = vm.Trip.DestinationId;
-                    TempData[nameof(Trip.StartDate)] = vm.Trip.StartDate;
-                    TempData[nameof(Trip.EndDate)] = vm.Trip.EndDate;
-
-                    // only store accommodation if user has selected an item from the drop-down
-                    if (vm.Trip.AccommodationId > 0)
-                        TempData[nameof(Trip.AccommodationId)] = vm.Trip.AccommodationId;
-
-                    return RedirectToAction("Add", new { id = "Page2" });
-                }
-                else
-                {
-                    // get data for drop-downs
-                    vm.Destinations = data.Destinations.List(new QueryOptions<Destination> { 
-                        OrderBy = d => d.Name
-                    });
-                    vm.Accommodations = data.Accommodations.List(new QueryOptions<Accommodation> { 
-                        OrderBy = a => a.Name
-                    });
-
-                    return View("Add1", vm);
-                }
-            }
-            else if (vm.PageNumber == 2)
-            {
-                // get saved data from TempData 
-                vm.Trip = new Trip { 
-                    DestinationId = (int)TempData[nameof(Trip.DestinationId)],
-                    StartDate = (DateTime)TempData[nameof(Trip.StartDate)],
-                    EndDate = (DateTime)TempData[nameof(Trip.EndDate)]
-                };
-                // only get accommodation if there's something in TempData
-                if (TempData.Keys.Contains(nameof(Trip.AccommodationId)))
-                    vm.Trip.AccommodationId = (int)TempData[nameof(Trip.AccommodationId)];
-
-                // add selected activities from page
-                foreach (int activityId in vm.SelectedActivities)
-                {
-                    if (vm.Trip.TripActivities == null) vm.Trip.TripActivities = new List<TripActivity>();
-                    vm.Trip.TripActivities.Add(new TripActivity { ActivityId = activityId });
-                }
-
-                data.Trips.Insert(vm.Trip);
-                data.Save();
-
-                // get destination data for notification message
-                var dest = data.Destinations.Get(vm.Trip.DestinationId);
-                TempData["message"] = $"Trip to {dest.Name} added.";
-
-                return RedirectToAction("Index", "Home");
-            }
-            else
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
+            TempData["TripPage2"] = JsonConvert.SerializeObject(model);
+            return RedirectToAction("Add3");
         }
+        return View(model);
+    }
 
-        public RedirectToActionResult Cancel()
+    public IActionResult Add3()
+    {
+        var model = new TripPage3ViewModel();
+        return View(model);
+    }
+
+    [HttpPost]
+    public IActionResult Add3(TripPage3ViewModel model)
+    {
+        if (ModelState.IsValid)
         {
+            var tripPage1 = JsonConvert.DeserializeObject<TripPage1ViewModel>(TempData["TripPage1"] as string);
+            var tripPage2 = TempData.ContainsKey("TripPage2") ? JsonConvert.DeserializeObject<TripPage2ViewModel>(TempData["TripPage2"] as string) : null;
+
+            var trip = new Trip
+            {
+                Destination = new Destination { Name = tripPage1.Destination },
+                Accommodation = string.IsNullOrEmpty(tripPage1.Accommodation) ? null : new Accommodation
+                {
+                    Name = tripPage1.Accommodation,
+                    Phone = tripPage2?.AccommodationPhoneNumber,
+                    Email = tripPage2?.AccommodationEmail
+                },
+                StartDate = tripPage1.StartDate,
+                EndDate = tripPage1.EndDate,
+                TripActivities = model.ThingsToDo.Select(thing => new TripActivity
+                {
+                    Activity = new Activity { Name = thing }
+                }).ToList()
+            };
+
+            _context.Trips.Add(trip);
+            _context.SaveChanges();
+
             TempData.Clear();
+            TempData["Message"] = "Trip has been added successfully!";
             return RedirectToAction("Index", "Home");
         }
+        return View(model);
+    }
 
-        [HttpPost]
-        public RedirectToActionResult Delete(int id)
-        {
-            Trip trip = data.Trips.Get(id);
-            Destination dest = data.Destinations.Get(trip.DestinationId); // for notification message
-
-            data.Trips.Delete(trip);
-            data.Save();
-
-            TempData["message"] = $"Trip to {dest.Name} deleted.";
-            return RedirectToAction("Index", "Home");
-        }
+    public IActionResult Cancel()
+    {
+        TempData.Clear();
+        return RedirectToAction("Index", "Home");
     }
 }
