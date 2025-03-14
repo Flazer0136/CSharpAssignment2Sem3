@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TripLogger.Models;
+using System.Linq;
 
 namespace TripLogger.Controllers
 {
@@ -18,13 +19,13 @@ namespace TripLogger.Controllers
                 .Select(t => new TripViewModel
                 {
                     Id = t.Id,
-                    Destination = t.Destination.Name,
-                    Accommodation = t.Accommodation.Name,
+                    Destination = t.Destination,
+                    Accommodation = t.Accommodation,
                     StartDate = t.StartDate,
                     EndDate = t.EndDate,
                     AccommodationPhoneNumber = t.AccommodationPhoneNumber,
                     AccommodationEmail = t.AccommodationEmail,
-                    ThingsToDo = string.Join("\n ", t.TripActivities.Select(a => a.Activity.Name))
+                    ThingsToDo = t.TripActivity
                 })
                 .ToList();
 

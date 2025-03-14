@@ -15,9 +15,6 @@ namespace TripLogger.Views.Trip
                 return Page();
             }
 
-            // Save the trip and things to do to the database
-            // ...
-
             return RedirectToPage("Index");
         }
     }

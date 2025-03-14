@@ -64,19 +64,13 @@ public class TripController : Controller
 
             var trip = new Trip
             {
-                Destination = new Destination { Name = tripPage1.Destination },
-                Accommodation = string.IsNullOrEmpty(tripPage1.Accommodation) ? null : new Accommodation
-                {
-                    Name = tripPage1.Accommodation,
-                    Phone = tripPage2?.AccommodationPhoneNumber,
-                    Email = tripPage2?.AccommodationEmail
-                },
+                Destination = tripPage1.Destination,
+                Accommodation = tripPage1.Accommodation,
+                AccommodationPhoneNumber = tripPage2?.AccommodationPhoneNumber,
+                AccommodationEmail = tripPage2?.AccommodationEmail,
                 StartDate = tripPage1.StartDate,
                 EndDate = tripPage1.EndDate,
-                TripActivities = model.ThingsToDo.Select(thing => new TripActivity
-                {
-                    Activity = new Activity { Name = thing }
-                }).ToList()
+                TripActivity = $"{model.ThingToDo1}\n{model.ThingToDo2}\n{model.ThingToDo3}"
             };
 
             _context.Trips.Add(trip);

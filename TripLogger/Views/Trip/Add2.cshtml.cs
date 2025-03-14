@@ -15,9 +15,6 @@ namespace TripLogger.Views.Trip
                 return Page();
             }
 
-            // Save the accommodation contact info to the database
-            // ...
-
             return RedirectToPage("Add3");
         }
     }
